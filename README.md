@@ -2,7 +2,9 @@
 
 **粘贴数据，选个样子，导出图。** 一个单文件 HTML 的零门槛图表工具——双击打开就能用，不装软件、不联网、数据不离开本机。
 
-![界面总览](docs/screenshot.png)
+**在线试用**：<https://dddg637.github.io/shagua-chart/> （不想下载就直接打开；数据同样只留在你自己的浏览器里）
+
+![界面总览](https://cdn.jsdelivr.net/gh/DDDG637/shagua-chart@main/docs/screenshot.png)
 
 ## 为什么做这个
 
@@ -29,7 +31,7 @@
 
 **点击改色**（下图）
 
-![点击改色](docs/color-picker.png)
+![点击改色](https://cdn.jsdelivr.net/gh/DDDG637/shagua-chart@main/docs/color-picker.png)
 
 直接点折线、柱子、散点、饼图扇区、图例或左侧色点，弹出取色面板：15 个预设色 + 系统取色器 + 恢复默认。悬停某条线时其余系列会淡出，避免多系列下点错。
 
@@ -44,6 +46,10 @@
 - 支持图表标题、轴标题、脚注（数据来源），脚注按画布宽度自动换行。
 
 ## 开始使用
+
+**方式一：在线用。** 打开 <https://dddg637.github.io/shagua-chart/> ，无需下载。
+
+**方式二：本地用（推荐，永久离线可用）。**
 
 1. 下载本仓库的 [`index.html`](index.html)；
 2. 双击用浏览器打开（Chrome / Edge / Firefox 均可）；
