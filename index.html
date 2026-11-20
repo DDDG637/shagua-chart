@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>傻瓜画图</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#F5F4F0;color:#1F1F1F;font-family:'Microsoft YaHei','Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{display:flex;gap:12px;padding:12px;align-items:flex-start;min-height:100vh}
+  .panel{width:356px;flex:none;background:#fff;border:1px solid #E5E3DB;border-radius:12px;padding:16px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto}
+  .stage{flex:1;min-width:0;background:#fff;border:1px solid #E5E3DB;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:calc(100vh - 24px)}
+  .brand{font-size:15px;font-weight:600;letter-spacing:.5px;display:flex;align-items:baseline;gap:8px}
+  .brand span{font-size:11px;font-weight:400;color:#94918A;letter-spacing:0}
+  .sect{margin-top:18px}
+  .sect-h{font-size:13px;font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #EFEDE6}
+  .fld{display:block;margin-bottom:8px}
+  .fld span{display:block;font-size:11px;color:#7C7970;margin-bottom:3px}
+  .fld.half{flex:1;min-width:0;margin-bottom:0}
+  .two{display:flex;gap:8px;margin-bottom:8px}
+  input[type=text],select,textarea{width:100%;font-family:inherit;font-size:12px;color:#1F1F1F;background:#FBFAF7;border:1px solid #E2E0D8;border-radius:6px;padding:6px 8px;outline:none;transition:border-color .15s,background .15s}
+  input[type=text]:focus,select:focus,textarea:focus{border-color:#8A8578;background:#fff}
+  textarea{resize:vertical;line-height:1.7;font-family:Consolas,'Courier New',monospace;font-size:12px}
+  textarea.ta-x{height:92px}
+  .series{margin-bottom:8px;border:1px solid #EDEBE3;border-radius:8px;padding:8px;background:#FCFBF8}
+  .s-head{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .s-dot{width:11px;height:11px;border-radius:50%;flex:none;background:#1F1F1F;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);transition:box-shadow .15s}
+  .s-dot:hover{box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 0 0 3px rgba(0,0,0,.1)}
+  .s-name{flex:1;min-width:0;font-size:12px;padding:3px 6px;border:1px solid transparent;background:transparent;border-radius:4px}
+  .s-name:hover{border-color:#E2E0D8;background:#fff}
+  .s-name:focus{border-color:#8A8578;background:#fff}
+  .s-del{flex:none;width:22px;height:22px;line-height:1;border:1px solid transparent;background:transparent;color:#B0ADA4;border-radius:4px;cursor:pointer;font-size:13px;padding:0}
+  .s-del:hover{color:#C0392B;border-color:#EFC9C4;background:#FCF1EF}
+  .s-del:disabled{opacity:.25;cursor:not-allowed}
+  .s-text{height:92px}
+  .ghost{width:100%;font-family:inherit;font-size:12px;padding:6px;border:1px dashed #D6D3C9;background:#FBFAF7;color:#7C7970;border-radius:6px;cursor:pointer}
+  .ghost:hover{border-color:#A8A498;color:#1F1F1F;background:#F4F2EC}
+  .lbl-mini{display:flex;justify-content:space-between;font-size:11px;color:#7C7970;margin:10px 0 6px}
+  .lbl-mini em{font-style:normal;color:#B0ADA4}
+  .status{margin-top:10px;font-size:11px;min-height:17px;color:#2E7D5B}
+  .status .warn{display:block;color:#B07A17}
+  .types{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:12px;padding:5px 12px;border:1px solid #E2E0D8;background:#FBFAF7;color:#4A4843;border-radius:6px;cursor:pointer;transition:all .15s}
+  .chip:hover{border-color:#B9B5A9;background:#F4F2EC}
+  .chip.on{background:#1F1F1F;border-color:#1F1F1F;color:#fff}
+  details.more{margin-top:18px;border-top:1px solid #EFEDE6;padding-top:12px}
+  details.more summary{font-size:13px;font-weight:600;cursor:pointer;list-style:none;color:#4A4843;user-select:none}
+  details.more summary::-webkit-details-marker{display:none}
+  details.more summary::before{content:'▸';display:inline-block;margin-right:6px;transition:transform .15s;color:#94918A}
+  details.more[open] summary::before{transform:rotate(90deg)}
+  .row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;font-size:12px;color:#4A4843;cursor:pointer}
+  .row select{width:140px;flex:none}
+  .sw{appearance:none;-webkit-appearance:none;width:34px;height:19px;border-radius:10px;background:#DEDBD2;position:relative;cursor:pointer;transition:background .15s;flex:none;margin:0}
+  .sw::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+  .sw:checked{background:#1F1F1F}
+  .sw:checked::after{transform:translateX(15px)}
+  .actions{display:flex;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #EFEDE6}
+  .actions button,.btns button{font-family:inherit;font-size:12px;padding:7px 8px;border:1px solid #E2E0D8;background:#FBFAF7;color:#4A4843;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .actions button{flex:1}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .bar .hint{font-size:11px;color:#94918A}
+  .btns{display:flex;gap:6px;flex:none}
+  .btns button{flex:none;padding:6px 14px}
+  .btns button.primary{background:#1F1F1F;border-color:#1F1F1F;color:#fff}
+  .btns button.primary:hover{background:#000;color:#fff}
+  .canvas{flex:1;display:flex;align-items:center;justify-content:center;border:1px solid #EFEDE6;border-radius:8px;padding:10px;background:#fff;min-height:320px}
+  .canvas svg{width:100%;height:auto;max-width:100%;max-height:calc(100vh - 210px);display:block}
+  .canvas svg [data-series],.canvas svg [data-pie]{cursor:pointer;transition:opacity .12s}
+  .canvas svg.dim [data-series],.canvas svg.dim [data-pie]{opacity:.2}
+  .canvas svg.dim [data-series].hl,.canvas svg.dim [data-pie].hl{opacity:1}
+  .picker{position:fixed;z-index:70;display:none;width:204px;background:#fff;border:1px solid #DCD9D0;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);padding:10px}
+  .picker.on{display:block}
+  .pk-head{display:flex;align-items:center;gap:6px;margin-bottom:9px}
+  .pk-dot{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+  .pk-name{flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pk-note{display:none;font-size:10.5px;line-height:1.5;color:#B07A17;background:#FBF6EA;border-radius:5px;padding:4px 6px;margin-bottom:9px}
+  .pk-x{border:0;background:none;color:#B0ADA4;font-size:11px;cursor:pointer;padding:2px 4px;line-height:1;border-radius:4px}
+  .pk-x:hover{background:#F4F2EC;color:#1F1F1F}
+  .pk-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .pk-sw{height:24px;border-radius:5px;border:0;padding:0;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+  .pk-sw.on{box-shadow:inset 0 0 0 1px rgba(0,0,0,.1),0 0 0 2px #fff,0 0 0 3.5px #1F1F1F}
+  .pk-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;padding-top:9px;border-top:1px solid #F0EEE7}
+  .pk-custom{display:flex;align-items:center;gap:5px;font-size:11px;color:#7C7970;cursor:pointer;border:1px solid #E2E0D8;border-radius:6px;padding:3px 8px 3px 3px}
+  .pk-custom:hover{border-color:#B9B5A9;color:#1F1F1F}
+  .pk-custom input{width:22px;height:18px;padding:0;border:0;background:none;cursor:pointer}
+  .pk-custom input::-webkit-color-swatch-wrapper{padding:0}
+  .pk-custom input::-webkit-color-swatch{border:1px solid rgba(0,0,0,.12);border-radius:3px}
+  .pk-reset{font-family:inherit;font-size:11px;color:#7C7970;background:none;border:0;cursor:pointer;padding:3px 4px;border-radius:4px}
+  .pk-reset:hover{color:#1F1F1F;background:#F4F2EC}
+  .pk-reset:disabled{color:#CFCCC3;background:none;cursor:default}
+  .foot{font-size:11px;color:#B0ADA4;text-align:center}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1F1F1F;color:#fff;font-size:12px;padding:8px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s}
+  .toast.on{opacity:1}
+  @media(max-width:900px){.wrap{flex-direction:column}.panel{width:100%;position:static;max-height:none}.stage{width:100%;min-height:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="panel">
+    <div class="brand">傻瓜画图<span>输入数据 · 选个样子 · 导出图</span></div>
+
+    <div class="sect" style="margin-top:14px">
+      <div class="sect-h">图表类型</div>
+      <div class="types" id="types">
+        <button class="chip" data-type="line">折线</button>
+        <button class="chip" data-type="bar">柱状</button>
+        <button class="chip" data-type="scatter">散点</button>
+        <button class="chip" data-type="pie">饼图</button>
+      </div>
+    </div>
+
+    <div class="sect">
+      <div class="sect-h">数据</div>
+      <label class="fld"><span>图表标题</span><input type="text" id="title" placeholder="可留空"></label>
+      <div class="two">
+        <label class="fld half"><span>横轴名称</span><input type="text" id="xTitle" placeholder="如：年份"></label>
+        <label class="fld half"><span>横轴类型</span>
+          <select id="xType">
+            <option value="auto">自动</option>
+            <option value="cat">分类</option>
+            <option value="num">数值</option>
+          </select>
+        </label>
+      </div>
+      <label class="fld"><span>横轴数据（每行一个）</span><textarea id="xText" class="ta-x" spellcheck="false" placeholder="每行一个值"></textarea></label>
+      <label class="fld"><span>纵轴名称</span><input type="text" id="yTitle" placeholder="如：营收（亿元）"></label>
+      <div class="lbl-mini"><span>纵轴数据</span><em id="seriesCount">1 个系列</em></div>
+      <div id="seriesList"></div>
+      <button id="addSeries" class="ghost">＋ 添加系列</button>
+      <label class="fld" style="margin-top:12px"><span>脚注（数据来源 / 说明）</span><input type="text" id="footnote" placeholder="如：数据来源：公司年报"></label>
+      <div class="status" id="status"></div>
+    </div>
+
+    <details class="more">
+      <summary>更多样式</summary>
+      <label class="row"><span>显示数据标签</span><input type="checkbox" class="sw" id="labels"></label>
+      <label class="row"><span>显示横向网格</span><input type="checkbox" class="sw" id="grid"></label>
+      <label class="row"><span>显示图例</span><input type="checkbox" class="sw" id="legend"></label>
+      <label class="row"><span>Y 轴从 0 起</span><input type="checkbox" class="sw" id="zero"></label>
+      <label class="row"><span>负值用绿色</span><input type="checkbox" class="sw" id="negColor"></label>
+      <label class="row"><span>柱状模式</span>
+        <select id="barMode">
+          <option value="group">分组并排</option>
+          <option value="stack">堆叠</option>
+        </select>
+      </label>
+      <label class="row"><span>配色</span>
+        <select id="palette">
+          <option value="ink">墨黑（默认）</option>
+          <option value="blue">靛蓝</option>
+          <option value="red">朱红</option>
+          <option value="green">松绿</option>
+        </select>
+      </label>
+      <label class="row"><span>画布比例</span>
+        <select id="aspect">
+          <option value="16:10">16 : 10</option>
+          <option value="4:3">4 : 3</option>
+          <option value="1:1">1 : 1</option>
+        </select>
+      </label>
+      <label class="row"><span>字体</span>
+        <select id="font">
+          <option value="'Microsoft YaHei','Segoe UI',sans-serif">微软雅黑</option>
+          <option value="'SimHei','Microsoft YaHei',sans-serif">黑体</option>
+          <option value="'SimSun','Songti SC',serif">宋体</option>
+          <option value="'Times New Roman',serif">Times New Roman</option>
+          <option value="Arial,Helvetica,sans-serif">Arial</option>
+        </select>
+      </label>
+      <label class="row"><span>PNG 分辨率</span>
+        <select id="scale">
+          <option value="2">2 倍</option>
+          <option value="3">3 倍（印刷）</option>
+          <option value="4">4 倍</option>
+        </select>
+      </label>
+    </details>
+
+    <div class="actions">
+      <button id="demo">载入示例</button>
+      <button id="clear">清空数据</button>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <div class="bar">
+      <span class="hint">实时预览 · 点击线条 / 柱子 / 扇区可改颜色</span>
+      <div class="btns">
+        <button id="png" class="primary">导出 PNG</button>
+        <button id="svg">导出 SVG</button>
+        <button id="copy">复制图片</button>
+      </div>
+    </div>
+    <div class="canvas" id="canvas"></div>
+    <div class="foot">数据自动存在本机浏览器，关掉再打开还在</div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="picker" id="picker">
+  <div class="pk-head">
+    <span class="pk-dot" id="pkDot"></span>
+    <span class="pk-name" id="pkName">系列</span>
+    <button class="pk-x" id="pkClose" type="button" title="关闭">✕</button>
+  </div>
+  <div class="pk-note" id="pkNote"></div>
+  <div class="pk-grid" id="pkGrid"></div>
+  <div class="pk-foot">
+    <label class="pk-custom" title="自己调一个颜色"><input type="color" id="pkCustom" value="#1F1F1F"><span>自定义</span></label>
+    <button class="pk-reset" id="pkReset" type="button">恢复默认</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'shagua-chart-v2';
+  var OLD_KEY = 'shagua-chart-v1';
+
+  var DEFAULTS = {
+    title: '近一年营收对比',
+    xTitle: '季度',
+    yTitle: '营业收入（亿元）',
+    footnote: '数据来源：公司年报',
+    xType: 'auto',
+    xText: '第1季度\n第2季度\n第3季度\n第4季度',
+    series: [
+      { name: '甲公司', text: '12.4\n15.8\n14.2\n21.6' },
+      { name: '乙公司', text: '9.8\n11.2\n13.6\n15.1' }
+    ],
+    type: 'line',
+    labels: true,
+    grid: true,
+    legend: true,
+    zero: true,
+    negColor: true,
+    barMode: 'group',
+    palette: 'ink',
+    pieColors: {},
+    aspect: '16:10',
+    font: "'Microsoft YaHei','Segoe UI',sans-serif",
+    scale: '3'
+  };
+
+  var PALETTE = {
+    ink: ['#1F1F1F', '#6B6A66', '#9C9A94', '#C4C2BB', '#8A8880'],
+    blue: ['#2F6FD0', '#5B9BE0', '#94BEEE', '#C4DAF5', '#1E4C93'],
+    red: ['#C0392B', '#DE7A5F', '#EFB3A2', '#F7D5C9', '#8E2A1F'],
+    green: ['#2E7D5B', '#5FA783', '#9DCBB4', '#CFE5D9', '#1C5C41']
+  };
+  var MULTI = ['#2F6FD0', '#C0392B', '#2E7D5B', '#BA7517', '#7F77DD', '#0F6E56', '#D4537E', '#888780', '#4A6FA5', '#A64B2A'];
+  var NEG = '#2E7D5B';
+  var INK = '#1F1F1F';
+  var GRID = '#ECEAE3';
+  var AXIS = '#1F1F1F';
+  var MUTED = '#7C7970';
+
+  var state = load();
+  var canvas = document.getElementById('canvas');
+  var statusEl = document.getElementById('status');
+  var toastEl = document.getElementById('toast');
+  var listEl = document.getElementById('seriesList');
+  var countEl = document.getElementById('seriesCount');
+  var lastSvg = '';
+  var lastData = null;
+  var lastW = 800, lastH = 500;
+
+  function cloneSeries(arr) {
+    return arr.map(function (s) {
+      var o = { name: s.name, text: s.text };
+      if (s.color) { o.color = s.color; }
+      return o;
+    });
+  }
+
+  function load() {
+    var s = {};
+    var k;
+    for (k in DEFAULTS) { s[k] = DEFAULTS[k]; }
+    s.series = cloneSeries(DEFAULTS.series);
+    s.pieColors = {};
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) {
+        var old = localStorage.getItem(OLD_KEY);
+        if (old) {
+          var o = JSON.parse(old);
+          o.series = [{ name: o.yTitle || '系列1', text: o.yText || '' }];
+          raw = JSON.stringify(o);
+        }
+      }
+      if (raw) {
+        var st = JSON.parse(raw);
+        for (k in DEFAULTS) { if (k !== 'pieColors' && st[k] !== undefined) { s[k] = st[k]; } }
+        if (st.pieColors) { for (var pc in st.pieColors) { s.pieColors[pc] = st.pieColors[pc]; } }
+        if (!s.series || !s.series.length) { s.series = cloneSeries(DEFAULTS.series); }
+        s.series = s.series.map(function (o2) {
+          var it = { name: o2.name || '系列', text: o2.text || '' };
+          if (o2.color) { it.color = o2.color; }
+          return it;
+        });
+      }
+    } catch (e) {}
+    return s;
+  }
+
+  var saveTimer = null;
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    }, 300);
+  }
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(function () { toastEl.classList.remove('on'); }, 1800);
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function toHalf(s) {
+    return String(s).replace(/[\uFF01-\uFF5E]/g, function (ch) {
+      return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0);
+    }).replace(/\u3000/g, ' ');
+  }
+
+  function textW(s, size) {
+    var w = 0;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      w += (c > 0x2E80 && c < 0x9FFF) || (c >= 0xFF00 && c <= 0xFFEF) ? size : size * 0.56;
+    }
+    return w;
+  }
+
+  function parseValue(raw) {
+    var s = String(raw).trim();
+    if (!s) { return { v: null, pct: false }; }
+    s = toHalf(s);
+    var pct = false;
+    if (s.indexOf('%') >= 0) { pct = true; s = s.replace(/%/g, ''); }
+    s = s.replace(/[¥$€£￥]/g, '').replace(/元|人民币|美元/g, '').trim();
+    var mult = 1;
+    if (s.indexOf('亿') >= 0) { mult = 1e8; s = s.replace(/亿/g, ''); }
+    else if (s.indexOf('万') >= 0) { mult = 1e4; s = s.replace(/万/g, ''); }
+    var prev;
+    do {
+      prev = s;
+      s = s.replace(/(\d),(\d{3})(?=\D|$)/g, '$1$2');
+      s = s.replace(/(\d),(\d{3})\./g, '$1$2.');
+    } while (s !== prev);
+    s = s.replace(/[\s,]/g, '');
+    if (s === '' || s === '-' || s === '.') { return { v: null, pct: pct }; }
+    var v = parseFloat(s);
+    if (!isFinite(v)) { return { v: null, pct: pct }; }
+    return { v: v * mult, pct: pct };
+  }
+
+  function splitLines(t) {
+    return String(t == null ? '' : t)
+      .replace(/\r\n?/g, '\n')
+      .split('\n')
+      .map(function (l) { return l.replace(/\u3000/g, ' ').trim(); })
+      .filter(function (l) { return l !== ''; });
+  }
+
+  function niceNum(range, round) {
+    var exp = Math.floor(Math.log10(range));
+    var f = range / Math.pow(10, exp);
+    var nf;
+    if (round) { nf = f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10; }
+    else { nf = f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10; }
+    return nf * Math.pow(10, exp);
+  }
+
+  function niceScale(min, max, want) {
+    if (!(max > min)) { max = min + 1; }
+    var range = niceNum(max - min, false);
+    var step = niceNum(range / (want - 1), true);
+    var nmin = Math.floor(min / step) * step;
+    var nmax = Math.ceil(max / step) * step;
+    var out = [];
+    var guard = 0;
+    for (var v = nmin; v <= nmax + step * 0.5 && guard < 60; v += step) {
+      out.push(Math.round(v * 1e6) / 1e6);
+      guard++;
+    }
+    return { min: nmin, max: nmax, ticks: out, step: step };
+  }
+
+  function trim(n) {
+    return String(Math.round(n * 100) / 100);
+  }
+
+  function fmtNum(v) {
+    var a = Math.abs(v);
+    if (a >= 1e8) { return trim(v / 1e8) + '亿'; }
+    if (a >= 1e4) { return trim(v / 1e4) + '万'; }
+    return trim(v);
+  }
+
+  function dims() {
+    if (state.aspect === '1:1') { return { w: 800, h: 800 }; }
+    if (state.aspect === '4:3') { return { w: 800, h: 600 }; }
+    return { w: 800, h: 500 };
+  }
+
+  function colorOf(si) {
+    var s = state.series[si];
+    if (s && s.color) { return s.color; }
+    var arr = PALETTE[state.palette] || PALETTE.ink;
+    return arr[si % arr.length];
+  }
+
+  function pieColor(i) {
+    var c = state.pieColors && state.pieColors[i];
+    return c || MULTI[i % MULTI.length];
+  }
+
+  function isLight(hex) {
+    var h = String(hex).replace('#', '');
+    var r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 168;
+  }
+
+  function wrapText(text, maxW, fs) {
+    var out = [];
+    String(text).replace(/\r\n?/g, '\n').split('\n').forEach(function (para) {
+      if (!para.trim()) { return; }
+      var line = '';
+      for (var i = 0; i < para.length; i++) {
+        var ch = para.charAt(i);
+        if (line && textW(line + ch, fs) > maxW) { out.push(line); line = ch; }
+        else { line += ch; }
+      }
+      if (line) { out.push(line); }
+    });
+    return out;
+  }
+
+  function buildData() {
+    var warns = [];
+    var xLines = splitLines(state.xText);
+    var raw = state.series.map(function (s, si) {
+      return { name: (s.name || '系列').trim() || '系列', vals: splitLines(s.text).map(parseValue), si: si };
+    });
+    var active = raw.filter(function (s) { return s.vals.length > 0; });
+    if (!active.length) { return { labels: [], xNums: [], series: [], warns: [], empty: true, numericX: false }; }
+
+    var m0 = active[0].vals.length;
+    active.forEach(function (s) { m0 = Math.min(m0, s.vals.length); });
+    var m = xLines.length ? Math.min(m0, xLines.length) : m0;
+
+    active.forEach(function (s) {
+      if (s.vals.length !== m) { warns.push('「' + s.name + '」有 ' + s.vals.length + ' 个值，按前 ' + m + ' 个对齐'); }
+    });
+    if (xLines.length && xLines.length !== m) {
+      warns.push('横轴 ' + xLines.length + ' 项，按前 ' + m + ' 项对齐');
+    }
+
+    var labels = [], xNums = [], badY = 0;
+    for (var i = 0; i < m; i++) {
+      labels.push(xLines.length ? xLines[i].replace(/^["']|["']$/g, '') : String(i + 1));
+      xNums.push(xLines.length ? parseValue(xLines[i]).v : i + 1);
+    }
+
+    var numericX = false;
+    if (state.xType === 'num') {
+      numericX = xNums.every(function (v) { return v !== null; });
+      if (!numericX) { warns.push('横轴含非数字值，已改用分类轴'); }
+    } else if (state.xType === 'auto') {
+      numericX = state.type === 'scatter' && xNums.every(function (v) { return v !== null; });
+    }
+
+    var series = active.map(function (s) {
+      var values = s.vals.slice(0, m).map(function (o) { return o.v; });
+      var bad = values.filter(function (v) { return v === null; }).length;
+      if (bad) { badY += bad; }
+      return { name: s.name, si: s.si, color: colorOf(s.si), values: values, bad: bad };
+    });
+    if (badY) { warns.push('跳过 ' + badY + ' 个无法识别的数值'); }
+    if (state.labels && series.length > 4) { warns.push('系列较多，数据标签可能拥挤'); }
+    if (state.type === 'pie' && series.length > 1) { warns.push('饼图只使用第一个系列'); }
+    if (state.type === 'pie' && series.some(function (s) { return s.values.some(function (v) { return v !== null && v < 0; }); })) {
+      warns.push('饼图不支持负值，按绝对值计算');
+    }
+
+    return { labels: labels, xNums: xNums, series: series, warns: warns, empty: false, numericX: numericX };
+  }
+
+  function svgOpen(W, H) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H +
+      '" font-family="' + esc(state.font) + '">' +
+      '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="#ffffff"/>';
+  }
+
+  function emptySvg() {
+    var d = dims();
+    return svgOpen(d.w, d.h) +
+      '<text x="' + d.w / 2 + '" y="' + d.h / 2 + '" text-anchor="middle" font-size="14" fill="#B0ADA4">在左侧填入数据即可出图</text>' +
+      '<text x="' + d.w / 2 + '" y="' + (d.h / 2 + 24) + '" text-anchor="middle" font-size="12" fill="#C6C3BA">横轴与纵轴按行一一对应</text>' +
+      '</svg>';
+  }
+
+  function packLegend(items, maxW, fs) {
+    var rows = [], row = [], w = 0;
+    items.forEach(function (it) {
+      var iw = 20 + textW(it.name, fs) + 18;
+      if (row.length && w + iw > maxW) { rows.push({ items: row, w: w }); row = []; w = 0; }
+      row.push(it);
+      w += iw;
+    });
+    if (row.length) { rows.push({ items: row, w: w }); }
+    return rows;
+  }
+
+  function drawLegend(rows, W, top, type, fs) {
+    var out = [];
+    rows.forEach(function (r, ri) {
+      var x = (W - r.w) / 2;
+      var y = top + ri * 20;
+      r.items.forEach(function (it) {
+        if (type === 'line') {
+          out.push('<line x1="' + x.toFixed(1) + '" y1="' + (y - 4).toFixed(1) + '" x2="' + (x + 13).toFixed(1) + '" y2="' + (y - 4).toFixed(1) + '" stroke="' + it.color + '" stroke-width="2.4" data-series="' + it.si + '"/>');
+        } else {
+          out.push('<rect x="' + x.toFixed(1) + '" y="' + (y - 9).toFixed(1) + '" width="12" height="9" rx="1.5" fill="' + it.color + '" data-series="' + it.si + '"/>');
+        }
+        out.push('<text x="' + (x + 18).toFixed(1) + '" y="' + y.toFixed(1) + '" font-size="' + fs + '" fill="' + INK + '" data-series="' + it.si + '">' + esc(it.name) + '</text>');
+        x += 20 + textW(it.name, fs) + 18;
+      });
+    });
+    return out.join('');
+  }
+
+  function draw() {
+    var d = buildData();
+    lastData = d;
+    hoverKey = '';
+    updateStatus(d);
+    if (d.empty) {
+      lastSvg = emptySvg();
+      lastW = dims().w; lastH = dims().h;
+      canvas.innerHTML = lastSvg;
+      return;
+    }
+    var base = dims();
+    var noteLines = state.footnote.trim() ? wrapText(state.footnote.trim(), base.w - 56, 11) : [];
+    var noteH = noteLines.length ? noteLines.length * 15 + 16 : 0;
+    var W = base.w, H = base.h + noteH;
+    lastW = W; lastH = H;
+
+    if (state.type === 'pie') {
+      lastSvg = drawPie(d, W, H, noteLines, noteH);
+      canvas.innerHTML = lastSvg;
+      return;
+    }
+    lastSvg = drawXY(d, W, H, noteLines, noteH);
+    canvas.innerHTML = lastSvg;
+  }
+
+  function noteBlock(noteLines, x0, W, H, noteH) {
+    if (!noteLines.length) { return ''; }
+    var out = [];
+    if (noteH) {
+      out.push('<line x1="' + x0 + '" y1="' + (H - noteH + 4) + '" x2="' + (W - 26) + '" y2="' + (H - noteH + 4) + '" stroke="#EFEDE6" stroke-width="1"/>');
+    }
+    var y = H - noteH + 18;
+    noteLines.forEach(function (l) {
+      out.push('<text x="' + x0 + '" y="' + y + '" font-size="11" fill="' + MUTED + '">' + esc(l) + '</text>');
+      y += 15;
+    });
+    return out.join('');
+  }
+
+  function drawXY(d, W, H, noteLines, noteH) {
+    var n = d.labels.length;
+    var stack = state.type === 'bar' && state.barMode === 'stack' && d.series.length > 1;
+    var dmin = Infinity, dmax = -Infinity;
+
+    if (stack) {
+      for (var i = 0; i < n; i++) {
+        var pos = 0, neg = 0;
+        d.series.forEach(function (s) {
+          var v = s.values[i];
+          if (v === null || v === undefined) { return; }
+          if (v >= 0) { pos += v; } else { neg += v; }
+        });
+        dmin = Math.min(dmin, neg); dmax = Math.max(dmax, pos);
+      }
+    } else {
+      d.series.forEach(function (s) {
+        s.values.forEach(function (v) {
+          if (v === null) { return; }
+          if (v < dmin) { dmin = v; }
+          if (v > dmax) { dmax = v; }
+        });
+      });
+    }
+    if (!isFinite(dmin)) { return emptySvg(); }
+
+    if (state.zero) { dmin = Math.min(0, dmin); dmax = Math.max(0, dmax); }
+    if (dmin === dmax) { var pad = Math.abs(dmin) * 0.5 || 1; dmin -= pad; dmax += pad; }
+    var ys = niceScale(dmin, dmax, 6);
+
+    var fs = 13;
+    var hasTitle = !!state.title.trim();
+    var hasXT = !!state.xTitle.trim();
+    var hasYT = !!state.yTitle.trim();
+
+    var showLegend = state.legend && d.series.length > 1;
+    var legendRows = showLegend ? packLegend(d.series, W - 80, 12) : [];
+    var legendH = legendRows.length ? legendRows.length * 20 + 12 : 0;
+
+    var padTop = (hasTitle ? 54 : 26) + legendH;
+    var yLabelW = 0;
+    ys.ticks.forEach(function (t) { yLabelW = Math.max(yLabelW, textW(fmtNum(t), fs)); });
+    var padLeft = 24 + yLabelW + (hasYT ? 30 : 0);
+    var padRight = 26;
+
+    var xTicks = [], xTickLabels = [], useNumX = d.numericX;
+    var xsc = null;
+    if (useNumX) {
+      var xmin = Math.min.apply(null, d.xNums), xmax = Math.max.apply(null, d.xNums);
+      if (xmin === xmax) { xmin -= 1; xmax += 1; }
+      xsc = niceScale(xmin, xmax, 6);
+      var allInt = d.xNums.every(function (v) { return Math.abs(v - Math.round(v)) < 1e-9; });
+      if (allInt && xsc.step < 1) { xsc = niceScale(xmin, xmax, Math.min(8, Math.round((xmax - xmin)) + 1)); }
+      xTicks = xsc.ticks;
+      xTickLabels = xTicks.map(fmtNum);
+    }
+
+    var probeW = W - padLeft - padRight;
+    var slotW = probeW / n;
+    var maxLW = 0;
+    if (useNumX) {
+      xTickLabels.forEach(function (t) { maxLW = Math.max(maxLW, textW(t, fs)); });
+    } else {
+      d.labels.forEach(function (t) { maxLW = Math.max(maxLW, textW(t, fs)); });
+    }
+    var rotate = useNumX ? (maxLW > probeW / Math.max(xTicks.length, 1) - 6) : (maxLW > slotW - 10);
+    var xLabelH = rotate ? Math.min(maxLW * 0.62 + 10, 76) : 20;
+    var padBottom = xLabelH + (hasXT ? 30 : 14) + noteH;
+
+    var x0 = padLeft, x1 = W - padRight, y0 = padTop, y1 = H - padBottom;
+    var plotW = x1 - x0, plotH = y1 - y0;
+    var span = ys.max - ys.min || 1;
+    var yOf = function (v) { return y1 - (v - ys.min) / span * plotH; };
+    var xOf, xOfCat = function (i) { return x0 + plotW * (i + 0.5) / n; };
+    if (useNumX) {
+      var xspan = xsc.max - xsc.min || 1;
+      xOf = function (v) { return x0 + (v - xsc.min) / xspan * plotW; };
+    } else {
+      xOf = xOfCat;
+    }
+
+    var out = [svgOpen(W, H)];
+
+    if (hasTitle) {
+      out.push('<text x="' + (W / 2) + '" y="33" text-anchor="middle" font-size="17" font-weight="600" fill="' + INK + '">' + esc(state.title) + '</text>');
+    }
+    if (showLegend) {
+      out.push(drawLegend(legendRows, W, (hasTitle ? 54 : 26) + 14, state.type, 12));
+    }
+
+    if (state.grid) {
+      ys.ticks.forEach(function (t) {
+        out.push('<line x1="' + x0 + '" y1="' + yOf(t).toFixed(1) + '" x2="' + x1 + '" y2="' + yOf(t).toFixed(1) + '" stroke="' + GRID + '" stroke-width="1"/>');
+      });
+    }
+
+    out.push('<line x1="' + x0 + '" y1="' + y0 + '" x2="' + x0 + '" y2="' + y1 + '" stroke="' + AXIS + '" stroke-width="1"/>');
+    out.push('<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x1 + '" y2="' + y1 + '" stroke="' + AXIS + '" stroke-width="1"/>');
+
+    if (ys.min < 0 && ys.max > 0) {
+      out.push('<line x1="' + x0 + '" y1="' + yOf(0).toFixed(1) + '" x2="' + x1 + '" y2="' + yOf(0).toFixed(1) + '" stroke="#C9C6BE" stroke-width="1"/>');
+    }
+
+    ys.ticks.forEach(function (t) {
+      var y = yOf(t);
+      out.push('<line x1="' + (x0 - 4) + '" y1="' + y.toFixed(1) + '" x2="' + x0 + '" y2="' + y.toFixed(1) + '" stroke="' + AXIS + '" stroke-width="1"/>');
+      out.push('<text x="' + (x0 - 8) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="' + fs + '" fill="' + INK + '">' + esc(fmtNum(t)) + '</text>');
+    });
+
+    if (useNumX) {
+      var tstep = 1;
+      if (rotate) { tstep = Math.ceil((maxLW + 10) / Math.max(probeW / xTicks.length, 1)); if (tstep < 1) { tstep = 1; } }
+      out.push('<line x1="' + x0 + '" y1="' + y1 + '" x2="' + x1 + '" y2="' + y1 + '" stroke="' + AXIS + '" stroke-width="1"/>');
+      xTicks.forEach(function (t, i) {
+        if (i % tstep !== 0) { return; }
+        var x = xOf(t);
+        out.push('<line x1="' + x.toFixed(1) + '" y1="' + y1 + '" x2="' + x.toFixed(1) + '" y2="' + (y1 + 4) + '" stroke="' + AXIS + '" stroke-width="1"/>');
+        if (rotate) {
+          out.push('<text x="' + x.toFixed(1) + '" y="' + (y1 + 17) + '" text-anchor="end" font-size="' + fs + '" fill="' + INK + '" transform="rotate(-35 ' + x.toFixed(1) + ' ' + (y1 + 17) + ')">' + esc(fmtNum(t)) + '</text>');
+        } else {
+          out.push('<text x="' + x.toFixed(1) + '" y="' + (y1 + 19) + '" text-anchor="middle" font-size="' + fs + '" fill="' + INK + '">' + esc(fmtNum(t)) + '</text>');
+        }
+      });
+    } else {
+      var stp = (rotate && slotW < 26) ? Math.ceil(26 / slotW) : 1;
+      d.labels.forEach(function (t, i) {
+        if (i % stp !== 0) { return; }
+        var x = xOfCat(i);
+        if (rotate) {
+          out.push('<text x="' + x.toFixed(1) + '" y="' + (y1 + 17) + '" text-anchor="end" font-size="' + fs + '" fill="' + INK + '" transform="rotate(-35 ' + x.toFixed(1) + ' ' + (y1 + 17) + ')">' + esc(t) + '</text>');
+        } else {
+          out.push('<text x="' + x.toFixed(1) + '" y="' + (y1 + 19) + '" text-anchor="middle" font-size="' + fs + '" fill="' + INK + '">' + esc(t) + '</text>');
+        }
+      });
+    }
+
+    if (hasXT) {
+      out.push('<text x="' + ((x0 + x1) / 2).toFixed(1) + '" y="' + (H - noteH - 10) + '" text-anchor="middle" font-size="13" fill="' + INK + '">' + esc(state.xTitle) + '</text>');
+    }
+    if (hasYT) {
+      var cy = (y0 + y1) / 2;
+      out.push('<text x="22" y="' + cy.toFixed(1) + '" text-anchor="middle" font-size="13" fill="' + INK + '" transform="rotate(-90 22 ' + cy.toFixed(1) + ')">' + esc(state.yTitle) + '</text>');
+    }
+
+    var labels = [];
+    var baseY = (ys.min <= 0 && ys.max >= 0) ? yOf(0) : (ys.min > 0 ? y1 : y0);
+    var order = [];
+    for (var q = 0; q < n; q++) { order.push(q); }
+    if (useNumX && (state.type === 'line' || state.type === 'scatter')) {
+      order.sort(function (a, b) { return d.xNums[a] - d.xNums[b]; });
+    }
+
+    if (state.type === 'bar') {
+      var bwBase;
+      if (useNumX) {
+        var sorted = d.xNums.slice().sort(function (a, b) { return a - b; });
+        var gap = Infinity;
+        for (var g = 1; g < sorted.length; g++) {
+          var gd = sorted[g] - sorted[g - 1];
+          if (gd > 0 && gd < gap) { gap = gd; }
+        }
+        if (!isFinite(gap)) { gap = (xsc.max - xsc.min) / n; }
+        bwBase = Math.max(gap / (xsc.max - xsc.min) * plotW * 0.72, 2);
+      } else {
+        bwBase = Math.min(slotW * 0.8, 76);
+      }
+      var m = d.series.length;
+      var bwS = stack ? bwBase : Math.max(bwBase / m, 1);
+
+      for (var i2 = 0; i2 < n; i2++) {
+        var xc = useNumX ? xOf(d.xNums[i2]) : xOfCat(i2);
+        var posB = 0, negB = 0;
+        d.series.forEach(function (s, k) {
+          var v = s.values[i2];
+          if (v === null || v === undefined) { return; }
+          var col = (state.negColor && v < 0) ? NEG : s.color;
+          var bx, gw, yTop, yBot;
+          if (stack) {
+            gw = bwBase;
+            bx = xc - gw / 2;
+            if (v >= 0) { yTop = yOf(posB + v); yBot = yOf(posB); posB += v; }
+            else { yTop = yOf(negB); yBot = yOf(negB + v); negB += v; }
+          } else {
+            gw = bwS * 0.88;
+            bx = xc - bwBase / 2 + k * bwS + (bwS - gw) / 2;
+            var yv = yOf(v);
+            yTop = Math.min(yv, baseY);
+            yBot = Math.max(yv, baseY);
+          }
+          var hh = Math.max(yBot - yTop, 0.8);
+          out.push('<rect x="' + bx.toFixed(1) + '" y="' + yTop.toFixed(1) + '" width="' + gw.toFixed(1) + '" height="' + hh.toFixed(1) + '" fill="' + col + '" data-series="' + s.si + '"' + (v < 0 ? ' data-neg="1"' : '') + '/>');
+          if (state.labels) {
+            var ly = stack ? (yTop + hh / 2 + 4) : (v >= 0 ? yTop - 7 : yBot + 14);
+            if (!stack || hh > 18) {
+              var lc = stack ? (isLight(col) ? INK : '#ffffff') : INK;
+              labels.push('<text x="' + (bx + gw / 2).toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="middle" font-size="' + (stack ? 11 : 12) + '" fill="' + lc + '" data-series="' + s.si + '">' + esc(fmtNum(v)) + '</text>');
+            }
+          }
+        });
+      }
+    } else if (state.type === 'line') {
+      d.series.forEach(function (s, k) {
+        var dy = (d.series.length > 1 && k % 2 === 1) ? 16 : -10;
+        var seg = [];
+        var segs = [];
+        order.forEach(function (i3) {
+          var v = s.values[i3];
+          if (v === null || v === undefined) {
+            if (seg.length) { segs.push(seg); seg = []; }
+            return;
+          }
+          var x = useNumX ? xOf(d.xNums[i3]) : xOfCat(i3);
+          seg.push(x.toFixed(1) + ',' + yOf(v).toFixed(1));
+        });
+        if (seg.length) { segs.push(seg); }
+        segs.forEach(function (sg) {
+          if (sg.length > 1) {
+            out.push('<polyline points="' + sg.join(' ') + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" data-series="' + s.si + '"/>');
+            out.push('<polyline points="' + sg.join(' ') + '" fill="none" stroke="#000" stroke-opacity="0" stroke-width="16" stroke-linejoin="round" stroke-linecap="round" pointer-events="stroke" data-hit="1" data-series="' + s.si + '"/>');
+          } else {
+            var p = sg[0].split(',');
+            out.push('<circle cx="' + p[0] + '" cy="' + p[1] + '" r="11" fill="#000" fill-opacity="0" pointer-events="all" data-hit="1" data-series="' + s.si + '"/>');
+            out.push('<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.8" fill="' + s.color + '" data-series="' + s.si + '"/>');
+          }
+        });
+        order.forEach(function (i4) {
+          var v = s.values[i4];
+          if (v === null || v === undefined) { return; }
+          var x = useNumX ? xOf(d.xNums[i4]) : xOfCat(i4);
+          var col = (state.negColor && v < 0) ? NEG : s.color;
+          out.push('<circle cx="' + x.toFixed(1) + '" cy="' + yOf(v).toFixed(1) + '" r="3.1" fill="#ffffff" stroke="' + col + '" stroke-width="2" data-series="' + s.si + '"' + (v < 0 ? ' data-neg="1"' : '') + '/>');
+          if (state.labels) {
+            var la = 'middle', lx2 = x;
+            if (x < x0 + 22) { la = 'start'; lx2 = x + 7; }
+            else if (x > x1 - 22) { la = 'end'; lx2 = x - 7; }
+            labels.push('<text x="' + lx2.toFixed(1) + '" y="' + (yOf(v) + dy).toFixed(1) + '" text-anchor="' + la + '" font-size="12" fill="' + INK + '" data-series="' + s.si + '">' + esc(fmtNum(v)) + '</text>');
+          }
+        });
+      });
+    } else {
+      d.series.forEach(function (s, k) {
+        var dy = (d.series.length > 1 && k % 2 === 1) ? 18 : -10;
+        order.forEach(function (i5) {
+          var v = s.values[i5];
+          if (v === null || v === undefined) { return; }
+          var x = useNumX ? xOf(d.xNums[i5]) : xOfCat(i5);
+          var col = (state.negColor && v < 0) ? NEG : s.color;
+          out.push('<circle cx="' + x.toFixed(1) + '" cy="' + yOf(v).toFixed(1) + '" r="11" fill="#000" fill-opacity="0" pointer-events="all" data-hit="1" data-series="' + s.si + '"/>');
+          out.push('<circle cx="' + x.toFixed(1) + '" cy="' + yOf(v).toFixed(1) + '" r="3.6" fill="' + col + '" data-series="' + s.si + '"' + (v < 0 ? ' data-neg="1"' : '') + '/>');
+          if (state.labels) {
+            var sa = 'middle', lx3 = x;
+            if (x < x0 + 22) { sa = 'start'; lx3 = x + 7; }
+            else if (x > x1 - 22) { sa = 'end'; lx3 = x - 7; }
+            labels.push('<text x="' + lx3.toFixed(1) + '" y="' + (yOf(v) + dy).toFixed(1) + '" text-anchor="' + sa + '" font-size="12" fill="' + INK + '" data-series="' + s.si + '">' + esc(fmtNum(v)) + '</text>');
+          }
+        });
+      });
+    }
+
+    out.push(labels.join(''));
+    out.push(noteBlock(noteLines, x0, W, H, noteH));
+    out.push('</svg>');
+    return out.join('');
+  }
+
+  function arcSlice(cx, cy, r, a0, a1, fill, idx) {
+    var at = ' data-pie="' + idx + '"';
+    if (a1 - a0 >= Math.PI * 2 - 1e-6) {
+      return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '" stroke="#ffffff" stroke-width="1.5"' + at + '/>';
+    }
+    var x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
+    var x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+    var large = (a1 - a0) > Math.PI ? 1 : 0;
+    return '<path d="M ' + cx + ' ' + cy + ' L ' + x0.toFixed(2) + ' ' + y0.toFixed(2) +
+      ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
+      ' Z" fill="' + fill + '" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"' + at + '/>';
+  }
+
+  function drawPie(d, W, H, noteLines, noteH) {
+    var s = d.series[0];
+    var pairs = [];
+    for (var i = 0; i < d.labels.length; i++) {
+      if (s.values[i] === null || s.values[i] === undefined) { continue; }
+      pairs.push({ label: d.labels[i], v: s.values[i], li: i });
+    }
+    if (!pairs.length) { return emptySvg(); }
+    var total = 0;
+    pairs.forEach(function (p) { total += Math.abs(p.v); });
+    if (total <= 0) { return emptySvg(); }
+
+    var hasTitle = !!state.title.trim();
+    var top = (hasTitle ? 54 : 24);
+    var cx = W / 2;
+    var cy = top + (H - noteH - top) / 2;
+    var r = Math.min(W * 0.26, (H - noteH - top) * 0.33);
+
+    var out = [svgOpen(W, H)];
+    if (hasTitle) {
+      out.push('<text x="' + (W / 2) + '" y="33" text-anchor="middle" font-size="17" font-weight="600" fill="' + INK + '">' + esc(state.title) + '</text>');
+    }
+    var a0 = -Math.PI / 2;
+    pairs.forEach(function (p, i2) {
+      var frac = Math.abs(p.v) / total;
+      var a1 = a0 + frac * Math.PI * 2;
+      out.push(arcSlice(cx, cy, r, a0, a1, pieColor(p.li), p.li));
+      var mid = (a0 + a1) / 2;
+      var lx = cx + Math.cos(mid) * r * 1.07;
+      var ly = cy + Math.sin(mid) * r * 1.07 + 4;
+      var anchor = Math.cos(mid) >= 0 ? 'start' : 'end';
+      var label = p.label + ' ' + (frac * 100).toFixed(1) + '%';
+      if (state.labels) { label += '（' + fmtNum(p.v) + '）'; }
+      out.push('<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + anchor + '" font-size="12" fill="' + INK + '">' + esc(label) + '</text>');
+      a0 = a1;
+    });
+    out.push(noteBlock(noteLines, W / 2 - 300, W, H, noteH));
+    out.push('</svg>');
+    return out.join('');
+  }
+
+  function updateStatus(d) {
+    var n = d.labels.length;
+    if (d.empty || !n) {
+      statusEl.innerHTML = '<span class="warn">还没有可用数据</span>';
+      countEl.textContent = state.series.length + ' 个系列';
+      return;
+    }
+    countEl.textContent = d.series.length + ' 个系列';
+    var html = '已识别 ' + n + ' 组数据';
+    if (d.warns.length) {
+      html += d.warns.slice(0, 3).map(function (w) { return '<span class="warn">' + esc(w) + '</span>'; }).join('');
+    }
+    statusEl.innerHTML = html;
+  }
+
+  var raf = null;
+  function schedule() {
+    if (raf) { return; }
+    raf = requestAnimationFrame(function () { raf = null; draw(); });
+  }
+
+  function bindText(id, key) {
+    var el = document.getElementById(id);
+    el.value = state[key];
+    el.addEventListener('input', function () {
+      state[key] = el.value;
+      save();
+      schedule();
+    });
+  }
+
+  function bindCheck(id, key) {
+    var el = document.getElementById(id);
+    el.checked = !!state[key];
+    el.addEventListener('change', function () {
+      state[key] = el.checked;
+      save();
+      schedule();
+    });
+  }
+
+  function bindSelect(id, key) {
+    var el = document.getElementById(id);
+    el.value = state[key];
+    el.addEventListener('change', function () {
+      state[key] = el.value;
+      save();
+      schedule();
+    });
+  }
+
+  bindText('title', 'title');
+  bindText('xTitle', 'xTitle');
+  bindText('yTitle', 'yTitle');
+  bindText('footnote', 'footnote');
+  bindText('xText', 'xText');
+  bindCheck('labels', 'labels');
+  bindCheck('grid', 'grid');
+  bindCheck('legend', 'legend');
+  bindCheck('zero', 'zero');
+  bindCheck('negColor', 'negColor');
+  bindSelect('xType', 'xType');
+  bindSelect('barMode', 'barMode');
+  bindSelect('palette', 'palette');
+  bindSelect('aspect', 'aspect');
+  bindSelect('font', 'font');
+  bindSelect('scale', 'scale');
+
+  document.getElementById('palette').addEventListener('change', function () {
+    closePicker();
+    paintDots();
+    var custom = state.series.some(function (s) { return !!s.color; });
+    if (custom) { toast('已换配色，自定义颜色保持不变'); }
+  });
+
+  var typeBtns = document.querySelectorAll('.chip');
+  function paintTypes() {
+    for (var i = 0; i < typeBtns.length; i++) {
+      if (typeBtns[i].getAttribute('data-type') === state.type) { typeBtns[i].classList.add('on'); }
+      else { typeBtns[i].classList.remove('on'); }
+    }
+  }
+  for (var ti = 0; ti < typeBtns.length; ti++) {
+    typeBtns[ti].addEventListener('click', function () {
+      state.type = this.getAttribute('data-type');
+      closePicker();
+      paintTypes();
+      save();
+      draw();
+    });
+  }
+  paintTypes();
+
+  /* ---------- 点击图中元素改颜色 ---------- */
+  var PRESETS = ['#1F1F1F', '#5A5852', '#8A8780', '#2F6FD0', '#5B9BE0',
+                 '#1E4C93', '#C0392B', '#A64B2A', '#D9822B', '#BA7517',
+                 '#2E7D5B', '#0F6E56', '#7F77DD', '#D4537E', '#888780'];
+  var pickerEl = document.getElementById('picker');
+  var pkDot = document.getElementById('pkDot');
+  var pkName = document.getElementById('pkName');
+  var pkGrid = document.getElementById('pkGrid');
+  var pkCustom = document.getElementById('pkCustom');
+  var pkNote = document.getElementById('pkNote');
+  var pk = { kind: '', index: -1 };
+
+  PRESETS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pk-sw';
+    b.style.background = c;
+    b.title = c;
+    b.setAttribute('data-color', c);
+    b.addEventListener('click', function () { applyColor(c); });
+    pkGrid.appendChild(b);
+  });
+
+  function toHex6(c) {
+    return /^#[0-9a-f]{6}$/i.test(String(c)) ? c : '#1F1F1F';
+  }
+
+  function markSwatch(c) {
+    var sws = pkGrid.querySelectorAll('.pk-sw');
+    for (var i = 0; i < sws.length; i++) {
+      var same = String(sws[i].getAttribute('data-color')).toLowerCase() === String(c).toLowerCase();
+      if (same) { sws[i].classList.add('on'); } else { sws[i].classList.remove('on'); }
+    }
+    pkCustom.value = toHex6(c);
+  }
+
+  function openPicker(kind, index, name, color, x, y, note) {
+    pk.kind = kind;
+    pk.index = index;
+    pkName.textContent = name;
+    pkDot.style.background = color;
+    pkNote.textContent = note || '';
+    pkNote.style.display = note ? 'block' : 'none';
+    var custom = kind === 'series'
+      ? !!(state.series[index] && state.series[index].color)
+      : !!(state.pieColors && state.pieColors[index]);
+    document.getElementById('pkReset').disabled = !custom;
+    markSwatch(color);
+    pickerEl.classList.add('on');
+    var w = pickerEl.offsetWidth || 204;
+    var h = pickerEl.offsetHeight || 220;
+    var vw = window.innerWidth || 1200;
+    var vh = window.innerHeight || 800;
+    var px = Math.min(Math.max(8, x - w / 2), vw - w - 8);
+    var py = y + 12;
+    if (py + h > vh - 8) { py = Math.max(8, y - h - 12); }
+    pickerEl.style.left = px + 'px';
+    pickerEl.style.top = py + 'px';
+  }
+
+  function closePicker() {
+    pickerEl.classList.remove('on');
+    pk.kind = '';
+    pk.index = -1;
+  }
+
+  function applyColor(c) {
+    if (pk.kind === 'series') {
+      if (!state.series[pk.index]) { return; }
+      state.series[pk.index].color = c;
+    } else if (pk.kind === 'pie') {
+      state.pieColors[pk.index] = c;
+    } else { return; }
+    pkDot.style.background = c;
+    markSwatch(c);
+    document.getElementById('pkReset').disabled = false;
+    paintDots();
+    save();
+    draw();
+  }
+
+  function resetColor() {
+    var def;
+    if (pk.kind === 'series') {
+      if (!state.series[pk.index]) { return; }
+      state.series[pk.index].color = '';
+      def = colorOf(pk.index);
+    } else if (pk.kind === 'pie') {
+      delete state.pieColors[pk.index];
+      def = pieColor(pk.index);
+    } else { return; }
+    pkDot.style.background = def;
+    markSwatch(def);
+    document.getElementById('pkReset').disabled = true;
+    paintDots();
+    save();
+    draw();
+  }
+
+  function paintDots() {
+    var dots = listEl.querySelectorAll('.s-dot');
+    for (var i = 0; i < dots.length; i++) {
+      if (state.series[i]) { dots[i].style.background = colorOf(i); }
+    }
+  }
+
+  function inspect(el) {
+    while (el && el !== canvas) {
+      if (el.getAttribute) {
+        var a = el.getAttribute('data-series');
+        if (a !== null) { return { kind: 'series', index: parseInt(a, 10) }; }
+        var b = el.getAttribute('data-pie');
+        if (b !== null) { return { kind: 'pie', index: parseInt(b, 10) }; }
+      }
+      el = el.parentNode;
+    }
+    return null;
+  }
+
+  function markHover(info) {
+    var svg = canvas.querySelector('svg');
+    if (!svg) { return; }
+    var nodes = svg.querySelectorAll('[data-series],[data-pie]');
+    var attr = info ? (info.kind === 'pie' ? 'data-pie' : 'data-series') : '';
+    var fit = false;
+    for (var i = 0; i < nodes.length; i++) {
+      var ok = !!info && nodes[i].getAttribute(attr) === String(info.index);
+      if (ok) { nodes[i].classList.add('hl'); fit = true; }
+      else { nodes[i].classList.remove('hl'); }
+    }
+    if (fit) { svg.classList.add('dim'); } else { svg.classList.remove('dim'); }
+  }
+
+  var hoverKey = '';
+  canvas.addEventListener('mousemove', function (e) {
+    var info = inspect(e.target);
+    var key = info ? info.kind + info.index : '';
+    if (key === hoverKey) { return; }
+    hoverKey = key;
+    markHover(info);
+  });
+  canvas.addEventListener('mouseleave', function () {
+    hoverKey = '';
+    markHover(null);
+  });
+
+  canvas.addEventListener('click', function (e) {
+    var info = inspect(e.target);
+    if (!info) { closePicker(); return; }
+    var name, color, note = '';
+    if (info.kind === 'series') {
+      var s = state.series[info.index];
+      if (!s) { return; }
+      name = (s.name || '').trim() || ('系列 ' + (info.index + 1));
+      color = colorOf(info.index);
+      if (state.negColor && e.target.getAttribute('data-neg') === '1') {
+        note = '负值固定显示为绿色，可在「更多样式」里关闭';
+      }
+    } else {
+      name = (lastData && lastData.labels[info.index]) || '扇区';
+      color = pieColor(info.index);
+    }
+    openPicker(info.kind, info.index, name, color, e.clientX, e.clientY, note);
+  });
+
+  document.addEventListener('mousedown', function (e) {
+    if (!pickerEl.classList.contains('on')) { return; }
+    if (pickerEl.contains(e.target) || canvas.contains(e.target)) { return; }
+    closePicker();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' || e.keyCode === 27) { closePicker(); }
+  });
+  document.getElementById('pkClose').addEventListener('click', closePicker);
+  document.getElementById('pkReset').addEventListener('click', resetColor);
+  pkCustom.addEventListener('input', function () { applyColor(pkCustom.value); });
+
+  function renderSeriesList() {
+    closePicker();
+    listEl.innerHTML = '';
+    state.series.forEach(function (s, i) {
+      var box = document.createElement('div');
+      box.className = 'series';
+
+      var head = document.createElement('div');
+      head.className = 's-head';
+
+      var dot = document.createElement('span');
+      dot.className = 's-dot';
+      dot.style.background = colorOf(i);
+      dot.title = '点击改颜色';
+      dot.addEventListener('click', function () {
+        var r = dot.getBoundingClientRect();
+        openPicker('series', i, (s.name || '').trim() || ('系列 ' + (i + 1)), colorOf(i), r.left + r.width / 2, r.bottom + 6);
+      });
+
+      var name = document.createElement('input');
+      name.type = 'text';
+      name.className = 's-name';
+      name.value = s.name;
+      name.placeholder = '图例名称';
+      name.addEventListener('input', function () { s.name = name.value; save(); schedule(); });
+
+      var del = document.createElement('button');
+      del.className = 's-del';
+      del.type = 'button';
+      del.textContent = '✕';
+      del.title = '删除该系列';
+      del.disabled = state.series.length <= 1;
+      del.addEventListener('click', function () {
+        if (state.series.length <= 1) { return; }
+        state.series.splice(i, 1);
+        renderSeriesList();
+        save();
+        draw();
+      });
+
+      var ta = document.createElement('textarea');
+      ta.className = 's-text';
+      ta.spellcheck = false;
+      ta.placeholder = '每行一个数';
+      ta.value = s.text;
+      ta.addEventListener('input', function () { s.text = ta.value; save(); schedule(); });
+      ta.addEventListener('paste', onPaste);
+
+      head.appendChild(dot);
+      head.appendChild(name);
+      head.appendChild(del);
+      box.appendChild(head);
+      box.appendChild(ta);
+      listEl.appendChild(box);
+    });
+  }
+
+  document.getElementById('addSeries').addEventListener('click', function () {
+    var nm = '系列 ' + (state.series.length + 1);
+    state.series.push({ name: nm, text: '' });
+    renderSeriesList();
+    save();
+    draw();
+    var tas = listEl.querySelectorAll('.s-text');
+    if (tas.length) { tas[tas.length - 1].focus(); }
+  });
+
+  function parseBlock(text) {
+    var lines = String(text).replace(/\r\n?/g, '\n').split('\n')
+      .map(function (l) { return l.trim(); })
+      .filter(function (l) { return l !== ''; });
+    if (lines.length < 2) { return null; }
+    var rows = lines.map(function (l) {
+      return l.split(/\t|,|;|\s{2,}/).map(function (x) { return x.trim(); }).filter(function (x) { return x !== ''; });
+    });
+    var C = rows[0].length;
+    if (C < 2) { return null; }
+    for (var i = 0; i < rows.length; i++) { if (rows[i].length !== C) { return null; } }
+    return rows;
+  }
+
+  function applyBlock(rows) {
+    var head = rows[0];
+    var body = rows.slice(1);
+    var names = null;
+    var dataRows = body;
+    if (body.length >= 2) {
+      var nameLike = true;
+      for (var j = 1; j < head.length; j++) { if (parseValue(head[j]).v !== null) { nameLike = false; break; } }
+      var numericBody = body.filter(function (r) {
+        for (var k = 1; k < r.length; k++) { if (parseValue(r[k]).v === null) { return false; } }
+        return true;
+      }).length;
+      if (nameLike && numericBody >= body.length * 0.8) { names = head; dataRows = body; }
+    }
+    if (!names) {
+      var okNumeric = rows.filter(function (r) {
+        for (var k2 = 1; k2 < r.length; k2++) { if (parseValue(r[k2]).v === null) { return false; } }
+        return true;
+      }).length;
+      if (okNumeric < rows.length * 0.8) { return false; }
+      dataRows = rows;
+    }
+
+    var cols = head.length - 1;
+    var xs = dataRows.map(function (r) { return r[0]; });
+    var newSeries = [];
+    for (var c = 0; c < cols; c++) {
+      var nm = names ? names[c + 1] : (state.series[c] && state.series[c].name) || ('系列 ' + (c + 1));
+      var it2 = { name: nm, text: dataRows.map(function (r) { return r[c + 1]; }).join('\n') };
+      if (state.series[c] && state.series[c].color) { it2.color = state.series[c].color; }
+      newSeries.push(it2);
+    }
+
+    state.xText = xs.join('\n');
+    state.series = newSeries;
+    document.getElementById('xText').value = state.xText;
+    renderSeriesList();
+    save();
+    draw();
+    return true;
+  }
+
+  function onPaste(e) {
+    var cd = e.clipboardData || window.clipboardData;
+    if (!cd) { return; }
+    var text = cd.getData('text');
+    var rows = parseBlock(text);
+    if (!rows) { return; }
+    e.preventDefault();
+    if (applyBlock(rows)) { toast('已拆分为 ' + (rows[0].length - 1) + ' 个系列'); }
+  }
+
+  document.getElementById('xText').addEventListener('paste', onPaste);
+
+  document.getElementById('demo').addEventListener('click', function () {
+    var k;
+    for (k in DEFAULTS) {
+      if (k === 'series') { state.series = cloneSeries(DEFAULTS.series); }
+      else if (k === 'pieColors') { state.pieColors = {}; }
+      else { state[k] = DEFAULTS[k]; }
+    }
+    syncFields();
+    save();
+    draw();
+    toast('已载入示例');
+  });
+
+  document.getElementById('clear').addEventListener('click', function () {
+    state.xText = '';
+    state.title = '';
+    state.footnote = '';
+    state.series = [{ name: '系列 1', text: '' }];
+    state.pieColors = {};
+    syncFields();
+    save();
+    draw();
+  });
+
+  function syncFields() {
+    document.getElementById('title').value = state.title;
+    document.getElementById('xTitle').value = state.xTitle;
+    document.getElementById('yTitle').value = state.yTitle;
+    document.getElementById('footnote').value = state.footnote;
+    document.getElementById('xText').value = state.xText;
+    document.getElementById('xType').value = state.xType;
+    document.getElementById('barMode').value = state.barMode;
+    document.getElementById('labels').checked = !!state.labels;
+    document.getElementById('grid').checked = !!state.grid;
+    document.getElementById('legend').checked = !!state.legend;
+    document.getElementById('zero').checked = !!state.zero;
+    document.getElementById('negColor').checked = !!state.negColor;
+    renderSeriesList();
+    paintTypes();
+  }
+
+  function download(blob, name) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function fileBase() {
+    var t = (state.title || 'chart').trim().replace(/[\\/:*?"<>|]/g, '_');
+    return t || 'chart';
+  }
+
+  function svgString() {
+    var clean = lastSvg
+      .replace(/<(polyline|rect|circle|path)\b[^>]*\sdata-hit="1"[^>]*\/>/g, '')
+      .replace(/\sdata-(?:series|pie|neg|hit)="[^"]*"/g, '');
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + clean;
+  }
+
+  document.getElementById('svg').addEventListener('click', function () {
+    if (!lastSvg) { return; }
+    download(new Blob([svgString()], { type: 'image/svg+xml;charset=utf-8' }), fileBase() + '.svg');
+    toast('已导出 SVG');
+  });
+
+  function toPngBlob(scale) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var blob = new Blob([svgString()], { type: 'image/svg+xml;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      img.onload = function () {
+        var c = document.createElement('canvas');
+        c.width = lastW * scale;
+        c.height = lastH * scale;
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (b) { b ? resolve(b) : reject(new Error('toBlob failed')); }, 'image/png');
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('svg load failed')); };
+      img.src = url;
+    });
+  }
+
+  document.getElementById('png').addEventListener('click', function () {
+    if (!lastSvg) { return; }
+    toast('正在生成…');
+    toPngBlob(parseInt(state.scale, 10) || 3).then(function (b) {
+      download(b, fileBase() + '.png');
+      toast('已导出 PNG');
+    }).catch(function () { toast('导出失败，请改用 SVG'); });
+  });
+
+  document.getElementById('copy').addEventListener('click', function () {
+    if (!lastSvg) { return; }
+    toPngBlob(parseInt(state.scale, 10) || 3).then(function (b) {
+      if (!navigator.clipboard || !window.ClipboardItem) { throw new Error('unsupported'); }
+      return navigator.clipboard.write([new ClipboardItem({ 'image/png': b })]);
+    }).then(function () {
+      toast('已复制到剪贴板');
+    }).catch(function () {
+      toast('当前浏览器不支持复制，请用导出 PNG');
+    });
+  });
+
+  renderSeriesList();
+  draw();
+})();
+</script>
+</body>
+</html>

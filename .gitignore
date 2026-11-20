@@ -1,0 +1,15 @@
+# 项目记忆与本地配置，不随仓库发布
+.workbuddy/
+
+# 临时调试产物
+_*.html
+_*.py
+_*.png
+_check.js
+
+# 系统与编辑器
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
