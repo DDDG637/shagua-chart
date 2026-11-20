@@ -2,7 +2,9 @@
 
 **粘贴数据，选个样子，导出图。** 一个单文件 HTML 的零门槛图表工具——双击打开就能用，不装软件、不联网、数据不离开本机。
 
-**在线试用**：<https://dddg637.github.io/shagua-chart/> （不想下载就直接打开；数据同样只留在你自己的浏览器里）
+**在线试用**：<https://shagua-chart.app.workbuddy.host/?sharecode=L4RPLV5TDS> （国内直连，不想下载就直接打开；数据同样只留在你自己的浏览器里）
+
+备用入口（GitHub Pages）：<https://dddg637.github.io/shagua-chart/>
 
 ![界面总览](https://cdn.jsdelivr.net/gh/DDDG637/shagua-chart@main/docs/screenshot.png)
 
@@ -47,7 +49,7 @@
 
 ## 开始使用
 
-**方式一：在线用。** 打开 <https://dddg637.github.io/shagua-chart/> ，无需下载。
+**方式一：在线用。** 打开 <https://shagua-chart.app.workbuddy.host/?sharecode=L4RPLV5TDS> ，无需下载。
 
 **方式二：本地用（推荐，永久离线可用）。**
 

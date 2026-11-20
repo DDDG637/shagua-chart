@@ -7,6 +7,9 @@ _*.py
 _*.png
 _check.js
 
+# 发布平台的本地标记文件
+*.genie
+
 # 系统与编辑器
 Thumbs.db
 Desktop.ini

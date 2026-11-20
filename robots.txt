@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dddg637.github.io/shagua-chart/sitemap.xml
